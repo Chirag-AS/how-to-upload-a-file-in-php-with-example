@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: "trouble1cluster-eab1"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "trouble1cluster-eab1"
+  template:
+    metadata:
+      labels:
+        app: "trouble1cluster-eab1"
+    spec:
+      containers:
+        - name: "trouble1cluster-eab1"
+          image: "trouble1container.azurecr.io/trouble1cluster"
+          ports:
+          - containerPort: 80
