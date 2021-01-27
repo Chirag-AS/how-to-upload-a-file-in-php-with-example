@@ -1,0 +1,50 @@
+on: [push]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    
+    - uses: azure/docker-login@v1
+      with:
+        login-server: trouble1container.azurecr.io
+        username: ${{ secrets.acr_trouble1container_username }}
+        password: ${{ secrets.acr_trouble1container_password }}
+    
+    - name: Build and push image to ACR
+      id: build-image
+      run: |
+        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t trouble1container.azurecr.io/trouble1cluster:${{ github.sha }}
+        docker push trouble1container.azurecr.io/trouble1cluster:${{ github.sha }}
+    
+    - uses: azure/k8s-set-context@v1
+      with:
+         kubeconfig: ${{ secrets.aks_trouble1cluster_kubeConfig }}
+      id: login
+    
+    - name: Create namespace
+      run: |
+        namespacePresent=`kubectl get namespace | grep trouble1clustera8ce | wc -l`
+        if [ $namespacePresent -eq 0 ]
+        then
+            echo `kubectl create namespace trouble1clustera8ce`
+        fi
+
+    - uses: azure/k8s-create-secret@v1
+      with:
+        namespace: trouble1clustera8ce
+        container-registry-url: trouble1container.azurecr.io
+        container-registry-username: ${{ secrets.acr_trouble1container_username }}
+        container-registry-password: ${{ secrets.acr_trouble1container_password }}
+        secret-name: trouble1clusdockerauth
+       
+    - uses: azure/k8s-deploy@v1.2
+      with:
+        namespace: trouble1clustera8ce
+        manifests: |
+          manifests/deployment-1.yml
+          manifests/service-1.yml
+        images: |
+          trouble1container.azurecr.io/trouble1cluster:${{ github.sha }}
+        imagepullsecrets: |
+          trouble1clusdockerauth
