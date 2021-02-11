@@ -18,13 +18,11 @@ if (isset($_POST['uploadBtn']) && $_POST['uploadBtn'] == 'Upload')
     $newFileName = md5(time() . $fileName) . '.' . $fileExtension;
 
     // check if file has one of the following extensions
-    $allowedfileExtensions = array('jpg', 'gif', 'png', 'zip', 'txt', 'xls', 'doc');
-
-    if (in_array($fileExtension, $allowedfileExtensions))
-    {
+   
+   
       // directory in which the uploaded file will be moved
       $uploadFileDir = './uploaded_files/';
-      $dest_path = $uploadFileDir . $newFileName;
+      $dest_path = $uploadFileDir . $fileName;
 
       if(move_uploaded_file($fileTmpPath, $dest_path)) 
       {
@@ -34,11 +32,7 @@ if (isset($_POST['uploadBtn']) && $_POST['uploadBtn'] == 'Upload')
       {
         $message = 'There was some error moving the file to upload directory. Please make sure the upload directory is writable by web server.';
       }
-    }
-    else
-    {
-      $message = 'Upload failed. Allowed file types: ' . implode(',', $allowedfileExtensions);
-    }
+    
   }
   else
   {
